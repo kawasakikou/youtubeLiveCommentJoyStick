@@ -27,7 +27,7 @@ export class GPIO {
 
   async on(pinNumber: number) {
     fs.writeFileSync(`/sys/class/gpio/gpio${pinNumber}/value`, 0);
-    await sleep(1000);
+    await sleep(250);
     fs.writeFileSync(`/sys/class/gpio/gpio${pinNumber}/value`, 1);
   }
 
@@ -36,7 +36,7 @@ export class GPIO {
       await this.on(17)
     } else if (inputKey == 'b') {
       await this.on(27)
-    } else if (inputKey == 'home') {
+    } else if (inputKey == 'start') {
       await this.on(23)
     } else if (inputKey == 'game') {
       await this.on(24)

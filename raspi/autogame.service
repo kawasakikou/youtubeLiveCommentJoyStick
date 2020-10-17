@@ -1,0 +1,17 @@
+[Unit]
+Description=NIS
+After=syslog.target network.target
+
+[Service]
+Type=forking
+EnvironmentFile=-/etc/default/autogame-1.0.0
+WorkingDirectory=/home/pi/working/youtubeLiveCommentJoyStick
+ExecStart=/usr/local/bin/autogame-1.0.0-start.sh
+ExecStop=/usr/local/bin/autogame-1.0.0-stop.sh
+User=pi
+Group=pi
+KillMode=none
+Restart = always
+
+[Install]
+WantedBy=multi-user.target

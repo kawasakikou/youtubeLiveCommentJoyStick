@@ -1,5 +1,7 @@
 import { GPIO } from './gameController/gpio';
-import fs from 'fs';
+import { getActiveLiveChatId, InputKeysAndNextPageToken } from "./api/controller/inputKeyQueue";
+import { getCommentAndExecKeyInput } from "./api/controller/inputKeyQueue";
+
 
 async function main() {
   const gpio = new GPIO();
@@ -19,12 +21,28 @@ async function main() {
   });
 
   try {
-    setInterval(() => {
-      console.log('>');
-      const key: string = 'u';
-      console.log(key);
-      gpio.keySelect(key)
-    }, 1500);
+    const key: string = process.env.YOUTUBE_API_KEY as string;
+    const videoId: string = process.env.VIDEO_ID as string; // FIXME: type guard
+
+    const activeLiveChatId = await getActiveLiveChatId(key, videoId);
+
+    let keyAndToken: InputKeysAndNextPageToken = {inputKeys: [], nextPageToken: ""};
+    setInterval(async () => {
+      keyAndToken = await getCommentAndExecKeyInput(key, activeLiveChatId, keyAndToken.nextPageToken);
+
+      for (const oneUserkeys of keyAndToken.inputKeys) {
+        console.log(oneUserkeys)
+        console.log(oneUserkeys.join(''))
+        if (oneUserkeys.join('') == 'start') {
+          await gpio.keySelect('start');
+        } else {
+          for (const inputKey of oneUserkeys) {
+            await gpio.keySelect(inputKey)
+          }
+        }
+      }
+    }, 6000);
+
   } catch (e) {
     gpio.cleanUp();
   }

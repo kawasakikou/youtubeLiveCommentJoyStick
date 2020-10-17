@@ -6,14 +6,17 @@
   "dependencies": {
     "@types/node": "12",
     "dotenv": "^8.2.0",
+    "node-fetch": "^2.6.1",
     "raspi": "^6.0.1",
     "request": "^2.88.2",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/node-fetch": "^2.5.7"
+  },
   "scripts": {
-    "dev": "ts-node index.ts",
+    "dev": "NODE_OPTIONS=--trace-warnings ts-node -r dotenv/config index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
