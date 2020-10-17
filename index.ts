@@ -1,6 +1,7 @@
 import { GPIO } from './gameController/gpio';
-import { getActiveLiveChatId, InputKeysAndNextPageToken } from "./api/controller/inputKeyQueue";
+import { getActiveLiveChatId, CommnadAndToken } from "./api/controller/inputKeyQueue";
 import { getCommentAndExecKeyInput } from "./api/controller/inputKeyQueue";
+import { ApiKeys } from "./api/youtubeLive/keys";
 
 
 async function main() {
@@ -21,18 +22,18 @@ async function main() {
   });
 
   try {
-    const key: string = process.env.YOUTUBE_API_KEY as string;
+    // @ts-ignore
+    const rawKey: string[] = process.env.YOUTUBE_API_KEYS.split(' ') as string[];
+    const key = new ApiKeys(rawKey);
+
     const videoId: string = process.env.VIDEO_ID as string; // FIXME: type guard
+    const activeLiveChatId = await getActiveLiveChatId(rawKey[0], videoId);
 
-    const activeLiveChatId = await getActiveLiveChatId(key, videoId);
-
-    let keyAndToken: InputKeysAndNextPageToken = {inputKeys: [], nextPageToken: ""};
+    let commandAndToken: CommnadAndToken = {inputKeys: [], nextPageToken: ""};
     setInterval(async () => {
-      keyAndToken = await getCommentAndExecKeyInput(key, activeLiveChatId, keyAndToken.nextPageToken);
+      commandAndToken = await getCommentAndExecKeyInput(key.getKey(), activeLiveChatId, commandAndToken.nextPageToken);
 
-      for (const oneUserkeys of keyAndToken.inputKeys) {
-        console.log(oneUserkeys)
-        console.log(oneUserkeys.join(''))
+      for (const oneUserkeys of commandAndToken.inputKeys) {
         if (oneUserkeys.join('') == 'start') {
           await gpio.keySelect('start');
         } else {

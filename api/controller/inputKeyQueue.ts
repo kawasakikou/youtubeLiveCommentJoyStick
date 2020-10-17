@@ -13,7 +13,7 @@ export const getActiveLiveChatId = async (key: string, videoId: string): Promise
   return activeLiveChatId;
 };
 
-export const getCommentAndExecKeyInput = async (key: string, activeLiveChatId: string, pageToken?: string): Promise<InputKeysAndNextPageToken> => {
+export const getCommentAndExecKeyInput = async (key: string, activeLiveChatId: string, pageToken?: string): Promise<CommnadAndToken> => {
   const res = await getLiveChatMessagesList(key, activeLiveChatId, pageToken);
   if (res.items) {
     const inputKeys = res.items.map(item => {
@@ -27,7 +27,7 @@ export const getCommentAndExecKeyInput = async (key: string, activeLiveChatId: s
   }
 };
 
-export type InputKeysAndNextPageToken = {
+export type CommnadAndToken = {
   inputKeys: string[][]
   nextPageToken: string
 }
