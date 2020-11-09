@@ -31,7 +31,18 @@ export class GPIO {
     fs.writeFileSync(`/sys/class/gpio/gpio${pinNumber}/value`, 1);
   }
 
-  async keySelect(inputKey: string) {
+  async input(inputKey: string[]) {
+    if (inputKey.join('') == 'start') {
+      await this.gpioSelect('start');
+    } else {
+      for (const k of inputKey) {
+        await this.gpioSelect(k);
+        if (k === 'a' || k === 'b') await sleep(300);
+      }
+    }
+  }
+
+  async gpioSelect(inputKey: string) {
     if (inputKey == 'a') {
       await this.on(17)
     } else if (inputKey == 'b') {
@@ -40,13 +51,13 @@ export class GPIO {
       await this.on(23)
     } else if (inputKey == 'game') {
       await this.on(24)
-    } else if (inputKey == 'u') {
+    } else if (inputKey == 'u' || inputKey == '上') {
       await this.on(16)
-    } else if (inputKey == 'd') {
+    } else if (inputKey == 'd' || inputKey == '下') {
       await this.on(20)
-    } else if (inputKey == 'r') {
+    } else if (inputKey == 'r' || inputKey == '右') {
       await this.on(21)
-    } else if (inputKey == 'l') {
+    } else if (inputKey == 'l' || inputKey == '左') {
       await this.on(26)
     } else {
       ;

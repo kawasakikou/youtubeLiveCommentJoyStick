@@ -10,7 +10,7 @@ export class ApiKeys {
 
   getKey() {
     const data = this.keys[this.nowIndex];
-    this.nowIndex = (this.nowIndex + 1 > this.keys.length) ? 0 : this.nowIndex;
+    this.nowIndex = (this.nowIndex + 1 > this.keys.length) ? 0 : this.nowIndex + 1;
     return data
   }
 }

@@ -1,25 +1,10 @@
-import { GPIO } from './gameController/gpio';
-import { getActiveLiveChatId, CommnadAndToken } from "./api/controller/inputKeyQueue";
-import { getCommentAndExecKeyInput } from "./api/controller/inputKeyQueue";
+import { CommnadAndToken, InputCommandQueue } from "./api/controller/inputCommandQueue";
 import { ApiKeys } from "./api/youtubeLive/keys";
+import { GBA } from "./gameController/gba";
 
 
 async function main() {
-  const gpio = new GPIO();
-  gpio.setup(17, 'OUT', 'HIGH');
-  gpio.setup(27, 'OUT', 'HIGH');
-  gpio.setup(23, 'OUT', 'HIGH');
-  gpio.setup(24, 'OUT', 'HIGH');
-
-  gpio.setup(16, 'OUT', 'HIGH');
-  gpio.setup(20, 'OUT', 'HIGH');
-  gpio.setup(21, 'OUT', 'HIGH');
-  gpio.setup(26, 'OUT', 'HIGH');
-
-  process.on('SIGINT', function() {
-    gpio.cleanUp();
-    process.exit();
-  });
+  const gameConsole = new GBA;
 
   try {
     // @ts-ignore
@@ -27,25 +12,23 @@ async function main() {
     const key = new ApiKeys(rawKey);
 
     const videoId: string = process.env.VIDEO_ID as string; // FIXME: type guard
-    const activeLiveChatId = await getActiveLiveChatId(rawKey[0], videoId);
+    const queue = new InputCommandQueue(key);
+    const activeLiveChatId = await queue.fetchActiveLiveChatId(videoId);
 
-    let commandAndToken: CommnadAndToken = {inputKeys: [], nextPageToken: ""};
+    let commandAndToken: CommnadAndToken = {inputCommands: [], nextPageToken: ""};
     setInterval(async () => {
-      commandAndToken = await getCommentAndExecKeyInput(key.getKey(), activeLiveChatId, commandAndToken.nextPageToken);
-
-      for (const oneUserkeys of commandAndToken.inputKeys) {
-        if (oneUserkeys.join('') == 'start') {
-          await gpio.keySelect('start');
-        } else {
-          for (const inputKey of oneUserkeys) {
-            await gpio.keySelect(inputKey)
-          }
+      commandAndToken = await queue.fetchCommentAndExecKeyInput(activeLiveChatId, commandAndToken.nextPageToken);
+      if (queue.hasExistsCommentWithinFiveMinutes()) {
+        for (const oneUserkeys of commandAndToken.inputCommands) {
+          await gameConsole.input(oneUserkeys);
         }
+      } else {
+        await gameConsole.randomInput();
       }
     }, 6000);
 
   } catch (e) {
-    gpio.cleanUp();
+    gameConsole.cleanUp();
   }
 }
 
